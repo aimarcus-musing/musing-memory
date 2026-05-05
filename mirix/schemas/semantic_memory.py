@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import Field, field_validator
 
@@ -7,6 +7,10 @@ from mirix.client.utils import get_utc_time
 from mirix.constants import MAX_EMBEDDING_DIM
 from mirix.schemas.embedding_config import EmbeddingConfig
 from mirix.schemas.mirix_base import MirixBase
+
+# Allowed values for SemanticMemoryItem.entry_type. Defines the full taxonomy
+# of semantic entries — see the design plan for which kinds of content go where.
+SemanticEntryType = Literal["fact", "concept", "entity", "procedure"]
 
 
 class SemanticMemoryItemBase(MirixBase):
@@ -21,6 +25,23 @@ class SemanticMemoryItemBase(MirixBase):
     source: str = Field(
         ...,
         description="Reference or origin of this information (e.g., book, article, movie)",
+    )
+    entry_type: SemanticEntryType = Field(
+        "fact",
+        description=(
+            "Kind of semantic entry. Use 'procedure' for workflows / how-to guides "
+            "(MIRIX's separate Procedural bucket has been folded into Semantic via this "
+            "discriminator). 'fact' is the default for general knowledge; 'concept' for "
+            "abstract ideas; 'entity' for named entities and relationships."
+        ),
+    )
+    structured_data: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description=(
+            "Optional structured payload. For entry_type='procedure', expected shape is "
+            "{'steps': [{'order': int, 'action': str, ...}, ...]}. For other entry_types, "
+            "the field is currently unused but kept generic for forward compatibility."
+        ),
     )
 
 
@@ -90,6 +111,14 @@ class SemanticMemoryItemUpdate(MirixBase):
     source: Optional[str] = Field(
         None,
         description="Reference or origin of this information (e.g., book, article, movie)",
+    )
+    entry_type: Optional[SemanticEntryType] = Field(
+        None,
+        description="Update the entry kind (fact / concept / entity / procedure)",
+    )
+    structured_data: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Update the structured payload (e.g., procedure steps)",
     )
     actor: Optional[str] = Field(
         None,

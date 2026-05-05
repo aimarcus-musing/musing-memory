@@ -293,8 +293,7 @@ class SemanticMemoryManager:
 
         # Try AND query first for more precise results
         try:
-            and_query_sql = text(
-                f"""
+            and_query_sql = text(f"""
                 SELECT
                     id, created_at, name, summary, details, source,
                     name_embedding, summary_embedding, details_embedding, embedding_config,
@@ -304,8 +303,7 @@ class SemanticMemoryManager:
                 WHERE {where_clause}
                 ORDER BY rank_score DESC, created_at DESC
                 LIMIT :limit_val
-            """
-            )
+            """)
 
             result = await session.execute(and_query_sql, query_params)
             results = result.all()
@@ -350,8 +348,7 @@ class SemanticMemoryManager:
             or_query_params = query_params.copy()
             or_query_params["tsquery"] = tsquery_string_or
 
-            or_query_sql = text(
-                f"""
+            or_query_sql = text(f"""
                 SELECT
                     id, created_at, name, summary, details, source,
                     name_embedding, summary_embedding, details_embedding, embedding_config,
@@ -361,8 +358,7 @@ class SemanticMemoryManager:
                 WHERE {where_clause}
                 ORDER BY rank_score DESC, created_at DESC
                 LIMIT :limit_val
-            """
-            )
+            """)
 
             results = await session.execute(or_query_sql, or_query_params)
 
@@ -518,9 +514,7 @@ class SemanticMemoryManager:
 
         # Ensure ID is set before model_dump
         if not item_data.id:
-            item_data.id = await generate_unique_short_id_async(
-                self.session_maker, SemanticMemoryItem, "sem"
-            )
+            item_data.id = await generate_unique_short_id_async(self.session_maker, SemanticMemoryItem, "sem")
 
         data_dict = item_data.model_dump()
 
@@ -771,9 +765,7 @@ class SemanticMemoryManager:
 
                 from mirix.database.filter_tags_query import apply_filter_tags_sqlalchemy
 
-                query_stmt = apply_filter_tags_sqlalchemy(
-                    query_stmt, SemanticMemoryItem, filter_tags, scopes=scopes
-                )
+                query_stmt = apply_filter_tags_sqlalchemy(query_stmt, SemanticMemoryItem, filter_tags, scopes=scopes)
 
                 if limit:
                     query_stmt = query_stmt.limit(limit)
@@ -810,9 +802,7 @@ class SemanticMemoryManager:
 
                 from mirix.database.filter_tags_query import apply_filter_tags_sqlalchemy
 
-                base_query = apply_filter_tags_sqlalchemy(
-                    base_query, SemanticMemoryItem, filter_tags, scopes=scopes
-                )
+                base_query = apply_filter_tags_sqlalchemy(base_query, SemanticMemoryItem, filter_tags, scopes=scopes)
 
                 if search_method == "embedding":
                     embed_query = True
@@ -908,7 +898,9 @@ class SemanticMemoryManager:
 
                 elif search_method == "fuzzy_match":
                     # Fuzzy matching: load all candidate items into memory and compute a fuzzy match score.
-                    result = await session.execute(select(SemanticMemoryItem).where(SemanticMemoryItem.user_id == user.id))
+                    result = await session.execute(
+                        select(SemanticMemoryItem).where(SemanticMemoryItem.user_id == user.id)
+                    )
                     all_items = result.scalars().all()
                     scored_items = []
                     for item in all_items:
@@ -952,6 +944,8 @@ class SemanticMemoryManager:
         details: Optional[str],
         source: Optional[str],
         organization_id: str,
+        entry_type: str = "fact",
+        structured_data: Optional[dict] = None,
         filter_tags: Optional[dict] = None,
         use_cache: bool = True,
         client_id: Optional[str] = None,
@@ -993,6 +987,8 @@ class SemanticMemoryManager:
                     summary=summary,
                     details=details,
                     source=source,
+                    entry_type=entry_type,
+                    structured_data=structured_data,
                     organization_id=organization_id,
                     details_embedding=details_embedding,
                     name_embedding=name_embedding,
@@ -1181,9 +1177,7 @@ class SemanticMemoryManager:
 
         async with self.session_maker() as session:
             # Get IDs for Redis cleanup (only fetch IDs, not full objects)
-            result = await session.execute(
-                select(SemanticMemoryItem.id).where(SemanticMemoryItem.user_id == user_id)
-            )
+            result = await session.execute(select(SemanticMemoryItem.id).where(SemanticMemoryItem.user_id == user_id))
             item_ids = [row[0] for row in result.all()]
 
             count = len(item_ids)
@@ -1251,7 +1245,9 @@ class SemanticMemoryManager:
                         from mirix.constants import MAX_EMBEDDING_DIM
                         from mirix.embeddings import embedding_model
 
-                        embedded_text = await (await embedding_model(agent_state.embedding_config)).get_text_embedding(query)
+                        embedded_text = await (await embedding_model(agent_state.embedding_config)).get_text_embedding(
+                            query
+                        )
                         embedded_text = np.array(embedded_text)
                         embedded_text = np.pad(
                             embedded_text,
@@ -1299,9 +1295,7 @@ class SemanticMemoryManager:
 
             from mirix.database.filter_tags_query import apply_filter_tags_sqlalchemy
 
-            base_query = apply_filter_tags_sqlalchemy(
-                base_query, SemanticMemoryItem, filter_tags, scopes=scopes
-            )
+            base_query = apply_filter_tags_sqlalchemy(base_query, SemanticMemoryItem, filter_tags, scopes=scopes)
 
             # Handle empty query - fall back to recent sort
             if not query or query == "":

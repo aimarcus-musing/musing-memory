@@ -31,6 +31,18 @@ class ProceduralMemoryItem(
     RecallMetadataMixin,
 ):
     """
+    DEPRECATED — Procedural Memory has been folded into Semantic Memory.
+
+    New procedural content (workflows, step-by-step guides, how-tos) is now
+    written to `semantic_memory` with `entry_type='procedure'` and the steps
+    in `structured_data={"steps": [...]}`. The meta-router prompt no longer
+    routes content here, and the Procedural Memory Manager is being phased out.
+
+    This class and its table remain in the codebase only so that legacy rows
+    (if any exist in a deployed DB) keep working until they are migrated.
+    Do NOT add new fields here, and do NOT add new write paths that target
+    this bucket. All new work targets `mirix.orm.semantic_memory`.
+
     Stores procedural memory entries, such as workflows, step-by-step guides, or how-to knowledge.
 
     type:        The category or tag of the procedure (e.g. 'workflow', 'guide', 'script')

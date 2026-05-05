@@ -28,6 +28,53 @@ stabilizes; treat this as the authoritative manual reference until then.
 - New enums `MemoryBucket` and `EdgeType`.
 - 23 schema-level unit tests; no DB required.
 
+## Bucket consolidation PR — Procedural folded into Semantic
+
+### What this PR ships
+
+- `SemanticMemoryItem` gains two columns:
+  - `entry_type VARCHAR(32) NOT NULL DEFAULT 'fact'` — discriminator across
+    `'fact' | 'concept' | 'entity' | 'procedure'`.
+  - `structured_data JSONB NULL` — holds procedure steps (or future typed
+    payloads). Shape for procedures: `{"steps": [{"order": int, "action": str, ...}, ...]}`.
+- New pg index `ix_semantic_memory_org_entry_type` on `(organization_id, entry_type)`
+  for filtering by entry kind.
+- Pydantic schema (`SemanticMemoryItemBase`, `SemanticMemoryItemUpdate`) gains
+  the same two fields with a `Literal` validator on `entry_type`.
+- `insert_semantic_item` plumbs `entry_type` and `structured_data` through to
+  the row.
+- Meta-router prompt + Semantic Memory Manager prompt updated: procedure
+  content now routes to Semantic with `entry_type='procedure'`. The
+  `'procedural'` choice is still legal in `trigger_memory_update`'s tool
+  signature but is no longer offered to the LLM in the meta-router prompt.
+- `ProceduralMemoryItem` ORM class carries a docstring deprecation banner —
+  the class and its table remain so legacy rows keep loading; no new writes
+  should target it.
+- 7 new schema-level tests guarding the entry_type taxonomy.
+
+### Deploy order
+
+Same envelope as the previous PR: schema-only, additive, safe defaults. On a
+greenfield deployment the new columns appear via `Base.metadata.create_all()`
+on FastAPI startup. No data migration is needed: existing semantic rows pick
+up `entry_type='fact'` via the column default; legacy procedural rows keep
+living in `procedural_memory` until a future migration backfills them into
+`semantic_memory` with `entry_type='procedure'`.
+
+### Rollback
+
+```sql
+-- Drop the bucket-consolidation columns + index
+DROP INDEX IF EXISTS ix_semantic_memory_org_entry_type;
+ALTER TABLE semantic_memory
+    DROP COLUMN IF EXISTS entry_type,
+    DROP COLUMN IF EXISTS structured_data;
+```
+
+The legacy `procedural_memory` table is untouched by this PR, so reverting
+prompts is enough to fully restore the prior bucket layout — no DDL needed
+on the procedural side.
+
 ### Deploy order
 
 This PR is **schema-only**. There is no service running musing-memory in

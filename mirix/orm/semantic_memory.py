@@ -81,6 +81,32 @@ class SemanticMemoryItem(
         doc="The reference or origin of this information (e.g., book, article, or movie)",
     )
 
+    # Discriminator: what kind of semantic entry this is.
+    # We've folded MIRIX's separate Procedural bucket into Semantic via this column —
+    # workflows, how-tos, and step-by-step guides live here as entry_type='procedure'
+    # with their structured steps in `structured_data`. Defaults to 'fact' for backward
+    # compatibility with existing rows that predate this column.
+    # Allowed values: 'fact' | 'concept' | 'entity' | 'procedure'.
+    entry_type: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+        default="fact",
+        server_default="fact",
+        doc="Kind of semantic entry (fact, concept, entity, procedure)",
+    )
+
+    # Generic structured payload for entries that need it. Used today by entry_type
+    # 'procedure' to hold a list of step dicts, e.g.:
+    #   {"steps": [{"order": 1, "action": "Open the form", ...}, ...]}
+    # Kept generic (not a typed `steps` column) so future entry_type variants can
+    # use it without schema changes — e.g., 'entity' might store relationship triples.
+    structured_data: Mapped[Optional[dict]] = mapped_column(
+        JSON,
+        nullable=True,
+        default=None,
+        doc="Optional structured payload (e.g., procedure steps for entry_type='procedure')",
+    )
+
     # NEW: Filter tags for flexible filtering and categorization
     filter_tags: Mapped[Optional[dict]] = mapped_column(
         JSON, nullable=True, default=None, doc="Custom filter tags for filtering and categorization"
@@ -129,6 +155,17 @@ class SemanticMemoryItem(
                 # Organization-level query optimization indexes
                 (
                     Index("ix_semantic_memory_organization_id", "organization_id")
+                    if settings.mirix_pg_uri_no_default
+                    else None
+                ),
+                # Filter by entry_type within an org/user (used when querying just
+                # procedures, just facts, etc.).
+                (
+                    Index(
+                        "ix_semantic_memory_org_entry_type",
+                        "organization_id",
+                        "entry_type",
+                    )
                     if settings.mirix_pg_uri_no_default
                     else None
                 ),

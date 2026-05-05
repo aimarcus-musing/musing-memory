@@ -154,10 +154,7 @@ async def episodic_memory_insert(self: "Agent", items: List[EpisodicEventForLLM]
                 user_id=user_id,
             )
         except Exception as e:
-            print(
-                f"[episodic_memory_insert] insert_event FAILED for item "
-                f"{item!r}: {e}"
-            )
+            print(f"[episodic_memory_insert] insert_event FAILED for item " f"{item!r}: {e}")
             traceback.print_exc()
             raise
 
@@ -193,10 +190,7 @@ async def episodic_memory_merge(
             update_mode="replace",
         )
     except Exception as e:
-        print(
-            f"[episodic_memory_merge] update_event FAILED for event_id "
-            f"{event_id!r}: {e}"
-        )
+        print(f"[episodic_memory_merge] update_event FAILED for event_id " f"{event_id!r}: {e}")
         traceback.print_exc()
         raise
     response = (
@@ -244,10 +238,7 @@ async def episodic_memory_replace(self: "Agent", event_ids: List[str], new_items
         try:
             await self.episodic_memory_manager.delete_event_by_id(event_id, actor=self.actor)
         except Exception as e:
-            print(
-                f"[episodic_memory_replace] delete_event_by_id FAILED for "
-                f"event_id {event_id!r}: {e}"
-            )
+            print(f"[episodic_memory_replace] delete_event_by_id FAILED for " f"event_id {event_id!r}: {e}")
             traceback.print_exc()
             raise
 
@@ -277,10 +268,7 @@ async def episodic_memory_replace(self: "Agent", event_ids: List[str], new_items
                 user_id=user_id,
             )
         except Exception as e:
-            print(
-                f"[episodic_memory_replace] insert_event FAILED for item "
-                f"{new_item!r}: {e}"
-            )
+            print(f"[episodic_memory_replace] insert_event FAILED for item " f"{new_item!r}: {e}")
             traceback.print_exc()
             raise
 
@@ -299,7 +287,9 @@ async def check_episodic_memory(self: "Agent", event_ids: List[str], timezone_st
         raise ValueError("User is required to check episodic memory")
 
     episodic_memory = [
-        await self.episodic_memory_manager.get_episodic_memory_by_id(event_id, user=self.user, timezone_str=timezone_str)
+        await self.episodic_memory_manager.get_episodic_memory_by_id(
+            event_id, user=self.user, timezone_str=timezone_str
+        )
         for event_id in event_ids
     ]
 
@@ -382,10 +372,7 @@ async def resource_memory_insert(self: "Agent", items: List[ResourceMemoryItemBa
                     user_id=user_id,
                 )
             except Exception as e:
-                print(
-                    f"[resource_memory_insert] insert_resource FAILED for item "
-                    f"{item!r}: {e}"
-                )
+                print(f"[resource_memory_insert] insert_resource FAILED for item " f"{item!r}: {e}")
                 traceback.print_exc()
                 raise
             inserted_count += 1
@@ -494,10 +481,7 @@ async def procedural_memory_insert(self: "Agent", items: List[ProceduralMemoryIt
                     user_id=user_id,
                 )
             except Exception as e:
-                print(
-                    f"[procedural_memory_insert] insert_procedure FAILED for "
-                    f"item {item!r}: {e}"
-                )
+                print(f"[procedural_memory_insert] insert_procedure FAILED for " f"item {item!r}: {e}")
                 traceback.print_exc()
                 raise
             inserted_count += 1
@@ -537,10 +521,7 @@ async def procedural_memory_update(self: "Agent", old_ids: List[str], new_items:
         try:
             await self.procedural_memory_manager.delete_procedure_by_id(procedure_id=old_id, actor=self.actor)
         except Exception as e:
-            print(
-                f"[procedural_memory_update] delete_procedure_by_id FAILED for "
-                f"old_id {old_id!r}: {e}"
-            )
+            print(f"[procedural_memory_update] delete_procedure_by_id FAILED for " f"old_id {old_id!r}: {e}")
             traceback.print_exc()
             raise
 
@@ -559,10 +540,7 @@ async def procedural_memory_update(self: "Agent", old_ids: List[str], new_items:
                 user_id=user_id,
             )
         except Exception as e:
-            print(
-                f"[procedural_memory_update] insert_procedure FAILED for item "
-                f"{item!r}: {e}"
-            )
+            print(f"[procedural_memory_update] insert_procedure FAILED for item " f"{item!r}: {e}")
             traceback.print_exc()
             raise
 
@@ -655,6 +633,8 @@ async def semantic_memory_insert(self: "Agent", items: List[SemanticMemoryItemBa
                     summary=item["summary"],
                     details=item["details"],
                     source=item["source"],
+                    entry_type=item.get("entry_type", "fact"),
+                    structured_data=item.get("structured_data"),
                     organization_id=self.actor.organization_id,
                     actor=self.actor,
                     filter_tags=filter_tags if filter_tags else None,
@@ -662,10 +642,7 @@ async def semantic_memory_insert(self: "Agent", items: List[SemanticMemoryItemBa
                     user_id=user_id,
                 )
             except Exception as e:
-                print(
-                    f"[semantic_memory_insert] insert_semantic_item FAILED for "
-                    f"item {item!r}: {e}"
-                )
+                print(f"[semantic_memory_insert] insert_semantic_item FAILED for " f"item {item!r}: {e}")
                 traceback.print_exc()
                 raise
             inserted_count += 1
@@ -707,14 +684,9 @@ async def semantic_memory_update(
 
     for old_id in old_semantic_item_ids:
         try:
-            await self.semantic_memory_manager.delete_semantic_item_by_id(
-                semantic_memory_id=old_id, actor=self.actor
-            )
+            await self.semantic_memory_manager.delete_semantic_item_by_id(semantic_memory_id=old_id, actor=self.actor)
         except Exception as e:
-            print(
-                f"[semantic_memory_update] delete_semantic_item_by_id FAILED for "
-                f"old_id {old_id!r}: {e}"
-            )
+            print(f"[semantic_memory_update] delete_semantic_item_by_id FAILED for " f"old_id {old_id!r}: {e}")
             traceback.print_exc()
             raise
 
@@ -735,10 +707,7 @@ async def semantic_memory_update(
                 user_id=user_id,
             )
         except Exception as e:
-            print(
-                f"[semantic_memory_update] insert_semantic_item FAILED for "
-                f"item {item!r}: {e}"
-            )
+            print(f"[semantic_memory_update] insert_semantic_item FAILED for " f"item {item!r}: {e}")
             traceback.print_exc()
             raise
         new_ids.append(inserted_item.id)
@@ -814,10 +783,7 @@ async def knowledge_vault_insert(self: "Agent", items: List[KnowledgeVaultItemBa
                     user_id=user_id,
                 )
             except Exception as e:
-                print(
-                    f"[knowledge_vault_insert] insert_knowledge FAILED for "
-                    f"item {item!r}: {e}"
-                )
+                print(f"[knowledge_vault_insert] insert_knowledge FAILED for " f"item {item!r}: {e}")
                 traceback.print_exc()
                 raise
             inserted_count += 1
@@ -855,14 +821,9 @@ async def knowledge_vault_update(self: "Agent", old_ids: List[str], new_items: L
 
     for old_id in old_ids:
         try:
-            await self.knowledge_vault_manager.delete_knowledge_by_id(
-                knowledge_vault_item_id=old_id, actor=self.actor
-            )
+            await self.knowledge_vault_manager.delete_knowledge_by_id(knowledge_vault_item_id=old_id, actor=self.actor)
         except Exception as e:
-            print(
-                f"[knowledge_vault_update] delete_knowledge_by_id FAILED for "
-                f"old_id {old_id!r}: {e}"
-            )
+            print(f"[knowledge_vault_update] delete_knowledge_by_id FAILED for " f"old_id {old_id!r}: {e}")
             traceback.print_exc()
             raise
 
@@ -883,10 +844,7 @@ async def knowledge_vault_update(self: "Agent", old_ids: List[str], new_items: L
                 user_id=user_id,
             )
         except Exception as e:
-            print(
-                f"[knowledge_vault_update] insert_knowledge FAILED for item "
-                f"{item!r}: {e}"
-            )
+            print(f"[knowledge_vault_update] insert_knowledge FAILED for item " f"{item!r}: {e}")
             traceback.print_exc()
             raise
 
@@ -1011,9 +969,7 @@ async def trigger_memory_update(self: "Agent", user_message: object, memory_type
     def _agent_type_key(at):
         return at.value if hasattr(at, "value") else str(at)
 
-    agent_type_to_state = {
-        _agent_type_key(agent_state.agent_type): agent_state for agent_state in child_agent_states
-    }
+    agent_type_to_state = {_agent_type_key(agent_state.agent_type): agent_state for agent_state in child_agent_states}
 
     if not child_agent_states:
         raise ValueError(
