@@ -7,6 +7,7 @@ from mirix.orm.cloud_file_mapping import CloudFileMapping
 from mirix.orm.episodic_memory import EpisodicEvent
 from mirix.orm.file import FileMetadata
 from mirix.orm.knowledge_vault import KnowledgeVaultItem
+from mirix.orm.memory_edge import MemoryEdge
 from mirix.orm.message import Message
 from mirix.orm.organization import Organization
 from mirix.orm.procedural_memory import ProceduralMemoryItem
@@ -28,6 +29,7 @@ __all__ = [
     "EpisodicEvent",
     "FileMetadata",
     "KnowledgeVaultItem",
+    "MemoryEdge",
     "Message",
     "Organization",
     "ProceduralMemoryItem",

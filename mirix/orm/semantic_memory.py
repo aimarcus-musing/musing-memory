@@ -7,7 +7,12 @@ from sqlalchemy.orm import Mapped, declared_attr, mapped_column, relationship
 
 from mirix.constants import MAX_EMBEDDING_DIM
 from mirix.orm.custom_columns import CommonVector, EmbeddingConfigColumn
-from mirix.orm.mixins import OrganizationMixin, UserMixin
+from mirix.orm.mixins import (
+    EmotionContextMixin,
+    OrganizationMixin,
+    RecallMetadataMixin,
+    UserMixin,
+)
 from mirix.orm.sqlalchemy_base import SqlalchemyBase
 from mirix.schemas.semantic_memory import SemanticMemoryItem as PydanticSemanticMemoryItem
 from mirix.settings import settings
@@ -18,7 +23,13 @@ if TYPE_CHECKING:
     from mirix.orm.user import User
 
 
-class SemanticMemoryItem(SqlalchemyBase, OrganizationMixin, UserMixin):
+class SemanticMemoryItem(
+    SqlalchemyBase,
+    OrganizationMixin,
+    UserMixin,
+    EmotionContextMixin,
+    RecallMetadataMixin,
+):
     """
     Stores semantic memory entries that represent general knowledge,
     concepts, facts, and language elements that can be accessed without

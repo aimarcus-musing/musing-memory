@@ -7,7 +7,12 @@ from sqlalchemy.orm import Mapped, declared_attr, mapped_column, relationship
 
 from mirix.constants import MAX_EMBEDDING_DIM
 from mirix.orm.custom_columns import CommonVector, EmbeddingConfigColumn
-from mirix.orm.mixins import OrganizationMixin, UserMixin
+from mirix.orm.mixins import (
+    EmotionContextMixin,
+    OrganizationMixin,
+    RecallMetadataMixin,
+    UserMixin,
+)
 from mirix.orm.sqlalchemy_base import SqlalchemyBase
 from mirix.schemas.episodic_memory import EpisodicEvent as PydanticEpisodicEvent
 from mirix.settings import settings
@@ -18,7 +23,13 @@ if TYPE_CHECKING:
     from mirix.orm.user import User
 
 
-class EpisodicEvent(SqlalchemyBase, OrganizationMixin, UserMixin):
+class EpisodicEvent(
+    SqlalchemyBase,
+    OrganizationMixin,
+    UserMixin,
+    EmotionContextMixin,
+    RecallMetadataMixin,
+):
     """
     Represents an event in the 'episodic memory' system, capturing
     timestamped interactions or observations with a short summary

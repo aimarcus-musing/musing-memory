@@ -11,7 +11,7 @@ from sqlalchemy.orm import (
 )
 
 from mirix.constants import CORE_MEMORY_BLOCK_CHAR_LIMIT
-from mirix.orm.mixins import OrganizationMixin, UserMixin
+from mirix.orm.mixins import EmotionContextMixin, OrganizationMixin, UserMixin
 from mirix.orm.sqlalchemy_base import SqlalchemyBase
 from mirix.schemas.block import Block as PydanticBlock
 from mirix.schemas.block import Human, Persona
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from mirix.orm.user import User
 
 
-class Block(OrganizationMixin, UserMixin, SqlalchemyBase):
+class Block(OrganizationMixin, UserMixin, EmotionContextMixin, SqlalchemyBase):
     """Blocks are sections of the LLM context, representing a specific part of the total Memory"""
 
     __tablename__ = "block"
